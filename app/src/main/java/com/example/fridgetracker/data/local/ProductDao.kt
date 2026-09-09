@@ -5,10 +5,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProductDao {
-    @Query("SELECT * FROM products WHERE isDeleted = 0 AND name LIKE '%' || :query || '%' ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM products WHERE isDeleted = 0 AND currentQuantity > 0 AND name LIKE '%' || :query || '%' ORDER BY updatedAt DESC")
     fun observeByQuery(query: String): Flow<List<ProductEntity>>
 
-    @Query("SELECT * FROM products WHERE isDeleted = 0 ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM products WHERE isDeleted = 0 AND currentQuantity > 0 ORDER BY updatedAt DESC")
     fun observeAll(): Flow<List<ProductEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

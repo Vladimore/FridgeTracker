@@ -37,9 +37,13 @@ data class SyncOperationEntity(@PrimaryKey val id: String, val entityId: String,
 interface CategoryDao {
     @Query("SELECT * FROM categories WHERE familyId = :familyId AND isDeleted = 0 ORDER BY name")
     fun observeAll(familyId: String): Flow<List<CategoryEntity>>
+    @Query("SELECT * FROM category_field_definitions WHERE categoryId = :categoryId ORDER BY sortOrder, fieldName")
+    fun observeFields(categoryId: String): Flow<List<CategoryFieldDefinitionEntity>>
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(category: CategoryEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insertField(field: CategoryFieldDefinitionEntity)
     @Update suspend fun update(category: CategoryEntity)
     @Query("UPDATE categories SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id") suspend fun softDelete(id: String, updatedAt: Long = System.currentTimeMillis())
+    @Query("DELETE FROM category_field_definitions WHERE id = :id") suspend fun deleteField(id: String)
 }
 
 @Dao

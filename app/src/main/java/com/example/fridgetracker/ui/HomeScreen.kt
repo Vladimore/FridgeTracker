@@ -3,6 +3,7 @@ package com.example.fridgetracker.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -17,7 +18,7 @@ import com.example.fridgetracker.domain.model.Product
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(repository: ProductRepository) {
+fun HomeScreen(repository: ProductRepository, gridMode: Boolean = false) {
     val context = LocalContext.current
     val products by repository
         .observeProducts()
@@ -89,20 +90,26 @@ fun HomeScreen(repository: ProductRepository) {
             Modifier.height(10.dp)
         )
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(bottom = 12.dp)
-        ) {
-            items(
-                filtered,
-                key = { it.id }
-            ) { product ->
-                ProductCard(
-                    product = product,
-                    repository = repository
-                ) {
-                    editingProduct = product
+        if (gridMode) {
+            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(bottom = 12.dp)
+            ) {
+                gridItems(filtered, key = { it.id }) { product ->
+                    ProductCard(product, repository, gridMode = true) { editingProduct = product }
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(bottom = 12.dp)
+            ) {
+                items(filtered, key = { it.id }) { product ->
+                    ProductCard(product, repository) { editingProduct = product }
                 }
             }
         }

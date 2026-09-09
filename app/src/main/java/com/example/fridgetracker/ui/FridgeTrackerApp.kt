@@ -11,12 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.fridgetracker.data.repository.ProductRepository
+import com.example.fridgetracker.data.repository.CategoryRepository
 import com.example.fridgetracker.data.settings.UserSettingsRepository
 import com.example.fridgetracker.ui.theme.FridgeTrackerTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun FridgeTrackerApp(repository: ProductRepository, settingsRepository: UserSettingsRepository) {
+fun FridgeTrackerApp(repository: ProductRepository, categoryRepository: CategoryRepository, settingsRepository: UserSettingsRepository) {
     val settings by settingsRepository.settings.collectAsState(initial = com.example.fridgetracker.data.settings.UserSettings())
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
@@ -54,7 +55,7 @@ fun FridgeTrackerApp(repository: ProductRepository, settingsRepository: UserSett
                 modifier = Modifier.padding(padding)
             ) {
                 composable("home") {
-                    HomeScreen(repository)
+                    HomeScreen(repository, settings.cardGrid)
                 }
 
                 composable("cart") {
@@ -66,8 +67,14 @@ fun FridgeTrackerApp(repository: ProductRepository, settingsRepository: UserSett
                         settings.darkTheme,
                         { scope.launch { settingsRepository.setDarkTheme(it) } },
                         settings.notificationsEnabled,
-                        { scope.launch { settingsRepository.setNotifications(it) } }
+                        { scope.launch { settingsRepository.setNotifications(it) } },
+                        settings.cardGrid,
+                        { scope.launch { settingsRepository.setCardGrid(it) } },
+                        onCategoriesClick = { navController.navigate("categories") }
                     )
+                }
+                composable("categories") {
+                    CategoryScreen(categoryRepository, onBack = { navController.popBackStack() })
                 }
             }
         }

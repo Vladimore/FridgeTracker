@@ -33,9 +33,32 @@ private const val ContentWidthFraction = 1f - MinusButtonWidthFraction
 fun ProductCard(
     product: Product,
     repository: ProductRepository,
+    gridMode: Boolean = false,
     onClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+
+    if (gridMode) {
+        Card(
+            modifier = Modifier.fillMaxWidth().height(150.dp).clickable(onClick = onClick),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(
+                Modifier.fillMaxSize().padding(12.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(formatProductName(product.name), style = MaterialTheme.typography.titleMedium, maxLines = 1)
+                Text("${formatQuantity(product.currentQuantity)} / ${formatQuantity(product.initialQuantity)}")
+                Button(
+                    onClick = { scope.launch { repository.decrementProduct(product) } },
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 44.dp),
+                    contentPadding = PaddingValues(vertical = 2.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) { Text("-") }
+            }
+        }
+        return
+    }
 
     Card(
         modifier = Modifier

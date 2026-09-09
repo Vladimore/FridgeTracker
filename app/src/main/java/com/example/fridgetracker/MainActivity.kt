@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.fridgetracker.data.local.ProductDatabase
 import com.example.fridgetracker.data.repository.ProductRepository
+import com.example.fridgetracker.data.repository.CategoryRepository
 import com.example.fridgetracker.data.settings.UserSettingsRepository
 import com.example.fridgetracker.ui.FridgeTrackerApp
 
@@ -16,9 +17,12 @@ class MainActivity : ComponentActivity() {
             ProductDatabase.getInstance(applicationContext).productDao(),
             ProductDatabase.getInstance(applicationContext).syncOperationDao()
         )
+        val categoryRepository = CategoryRepository(
+            ProductDatabase.getInstance(applicationContext).categoryDao()
+        )
 
         setContent {
-            FridgeTrackerApp(repository, UserSettingsRepository(applicationContext))
+            FridgeTrackerApp(repository, categoryRepository, UserSettingsRepository(applicationContext))
         }
     }
 }

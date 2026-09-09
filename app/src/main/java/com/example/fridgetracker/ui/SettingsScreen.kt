@@ -2,6 +2,7 @@ package com.example.fridgetracker.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,7 +15,10 @@ fun SettingsScreen(
     darkTheme: Boolean,
     onDarkThemeChange: (Boolean) -> Unit,
     notificationsEnabled: Boolean,
-    onNotificationsChange: (Boolean) -> Unit
+    onNotificationsChange: (Boolean) -> Unit,
+    gridMode: Boolean,
+    onGridModeChange: (Boolean) -> Unit,
+    onCategoriesClick: () -> Unit
 ) {
     Column(
         Modifier
@@ -41,6 +45,12 @@ fun SettingsScreen(
             notificationsEnabled,
             onNotificationsChange
         )
+
+        SettingRow("Вид карточек: две колонки", gridMode, onGridModeChange)
+
+        OutlinedButton(onClick = onCategoriesClick, modifier = Modifier.fillMaxWidth()) {
+            Text("Категории и поля")
+        }
     }
 }
 
