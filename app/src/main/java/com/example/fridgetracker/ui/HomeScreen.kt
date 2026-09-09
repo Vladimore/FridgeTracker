@@ -125,7 +125,8 @@ fun HomeScreen(repository: ProductRepository) {
                             weight = form.weight
                                 .replace(',', '.')
                                 .toDouble(),
-                            quantity = form.quantity.toInt(),
+                            initialQuantity = form.quantity.replace(',', '.').toDouble(),
+                            currentQuantity = form.quantity.replace(',', '.').toDouble(),
                             expirationDate = null
                         )
                     )
@@ -143,7 +144,7 @@ fun HomeScreen(repository: ProductRepository) {
                 name = product.name,
                 imageUri = product.imageUri,
                 weight = product.weight.toString(),
-                quantity = product.quantity.toString()
+                quantity = product.currentQuantity.toString()
             ),
             confirmText = "Сохранить",
             onDismiss = {
@@ -158,7 +159,8 @@ fun HomeScreen(repository: ProductRepository) {
                             weight = form.weight
                                 .replace(',', '.')
                                 .toDouble(),
-                            quantity = form.quantity.toInt()
+                            initialQuantity = product.initialQuantity,
+                            currentQuantity = form.quantity.replace(',', '.').toDouble()
                         )
                     )
                 }

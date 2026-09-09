@@ -102,11 +102,11 @@ fun ProductCard(
                     )
 
                     Text(
-                        "Вес: ${formatWeight(product.weight)} кг"
+                        "Вес: ${formatWeight(product.weight)} ${product.weightUnit}"
                     )
 
                     Text(
-                        "Количество: ${product.quantity}"
+                        "Остаток: ${formatQuantity(product.currentQuantity)} (${remainingPercent(product)}%)"
                     )
                 }
             }
@@ -119,15 +119,7 @@ fun ProductCard(
                     .background(MinusButtonColor)
                     .clickable {
                         scope.launch {
-                            val newQuantity = product.quantity - 1
-
-                            if (newQuantity <= 0) {
-                                repository.deleteProduct(product)
-                            } else {
-                                repository.updateProduct(
-                                    product.copy(quantity = newQuantity)
-                                )
-                            }
+                            repository.decrementProduct(product)
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -157,3 +149,10 @@ private fun formatWeight(value: Double): String =
     } else {
         value.toString()
     }
+
+private fun formatQuantity(value: Double): String =
+    if (value % 1.0 == 0.0) value.toInt().toString() else "%.2f".format(value).trimEnd('0').trimEnd('.')
+
+private fun remainingPercent(product: Product): Int =
+    if (product.initialQuantity <= 0.0) 0
+    else ((product.currentQuantity / product.initialQuantity) * 100).toInt().coerceIn(0, 100)
