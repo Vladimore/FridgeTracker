@@ -11,15 +11,17 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.fridgetracker.data.repository.ProductRepository
+import com.example.fridgetracker.data.settings.UserSettingsRepository
 import com.example.fridgetracker.ui.theme.FridgeTrackerTheme
+import kotlinx.coroutines.launch
 
 @Composable
-fun FridgeTrackerApp(repository: ProductRepository) {
-    var darkTheme by remember { mutableStateOf(false) }
-    var notificationsEnabled by remember { mutableStateOf(false) }
+fun FridgeTrackerApp(repository: ProductRepository, settingsRepository: UserSettingsRepository) {
+    val settings by settingsRepository.settings.collectAsState(initial = com.example.fridgetracker.data.settings.UserSettings())
+    val scope = rememberCoroutineScope()
     val navController = rememberNavController()
 
-    FridgeTrackerTheme(darkTheme) {
+    FridgeTrackerTheme(settings.darkTheme) {
         Scaffold(
             bottomBar = {
                 NavigationBar {
@@ -61,10 +63,10 @@ fun FridgeTrackerApp(repository: ProductRepository) {
 
                 composable("settings") {
                     SettingsScreen(
-                        darkTheme,
-                        { darkTheme = it },
-                        notificationsEnabled,
-                        { notificationsEnabled = it }
+                        settings.darkTheme,
+                        { scope.launch { settingsRepository.setDarkTheme(it) } },
+                        settings.notificationsEnabled,
+                        { scope.launch { settingsRepository.setNotifications(it) } }
                     )
                 }
             }
