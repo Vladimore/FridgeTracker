@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +34,11 @@ fun HomeScreen(repository: ProductRepository, gridMode: Boolean = false) {
     var showAdd by remember {
         mutableStateOf(false)
     }
+
+    var showScanner by remember { mutableStateOf(false) }
+    var scannedBarcode by remember { mutableStateOf<String?>(null) }
+    var showBarcodeNotFound by remember { mutableStateOf(false) }
+    var addForm by remember { mutableStateOf(ProductFormState()) }
 
     var editingProduct by remember {
         mutableStateOf<Product?>(null)
@@ -73,6 +79,7 @@ fun HomeScreen(repository: ProductRepository, gridMode: Boolean = false) {
 
             FilledTonalIconButton(
                 onClick = {
+                    addForm = ProductFormState()
                     showAdd = true
                 },
                 modifier = Modifier
@@ -82,6 +89,18 @@ fun HomeScreen(repository: ProductRepository, gridMode: Boolean = false) {
                 Icon(
                     Icons.Default.Add,
                     contentDescription = "Добавить продукт"
+                )
+            }
+
+            FilledTonalIconButton(
+                onClick = { showScanner = true },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+            ) {
+                Icon(
+                    Icons.Default.QrCodeScanner,
+                    contentDescription = "Сканировать штрихкод"
                 )
             }
         }
@@ -102,6 +121,7 @@ fun HomeScreen(repository: ProductRepository, gridMode: Boolean = false) {
                     ProductCard(product, repository, gridMode = true) { editingProduct = product }
                 }
             }
+
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -118,7 +138,7 @@ fun HomeScreen(repository: ProductRepository, gridMode: Boolean = false) {
     if (showAdd) {
         ProductDialog(
             title = "Добавить продукт",
-            initial = ProductFormState(),
+            initial = addForm,
             confirmText = "Добавить",
             onDismiss = {
                 showAdd = false
@@ -134,6 +154,7 @@ fun HomeScreen(repository: ProductRepository, gridMode: Boolean = false) {
                                 .toDouble(),
                             initialQuantity = form.quantity.replace(',', '.').toDouble(),
                             currentQuantity = form.quantity.replace(',', '.').toDouble(),
+                            barcode = form.barcode,
                             expirationDate = null
                         )
                     )
@@ -141,6 +162,48 @@ fun HomeScreen(repository: ProductRepository, gridMode: Boolean = false) {
             },
             afterAddMode = true,
             repository = repository
+        )
+    }
+
+    if (showScanner) {
+        BarcodeScannerDialog(
+            onBarcodeDetected = { barcode ->
+                showScanner = false
+                scope.launch {
+                    val cached = repository.findBarcodeCache(barcode)
+                    scannedBarcode = barcode
+                    if (cached == null) {
+                        showBarcodeNotFound = true
+                    } else {
+                        addForm = ProductFormState(
+                            name = cached.name,
+                            imageUri = cached.imageUrl,
+                            weight = cached.additionalData ?: "1",
+                            barcode = cached.barcode
+                        )
+                        showAdd = true
+                    }
+                }
+            },
+            onDismiss = { showScanner = false }
+        )
+    }
+
+    if (showBarcodeNotFound) {
+        AlertDialog(
+            onDismissRequest = { showBarcodeNotFound = false },
+            title = { Text("Штрихкод не найден") },
+            text = { Text("Добавить продукт вручную и сохранить этот штрихкод для будущего поиска?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBarcodeNotFound = false
+                    addForm = ProductFormState(barcode = scannedBarcode)
+                    showAdd = true
+                }) { Text("Добавить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBarcodeNotFound = false }) { Text("Отмена") }
+            }
         )
     }
 

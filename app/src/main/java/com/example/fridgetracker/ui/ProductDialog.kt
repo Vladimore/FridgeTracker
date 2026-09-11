@@ -137,6 +137,19 @@ internal fun ProductDialog(
                     }
                 )
 
+                val barcode = form.barcode
+                if (barcode != null) {
+                    OutlinedTextField(
+                        value = barcode,
+                        onValueChange = {},
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        singleLine = true,
+                        shape = RoundedCornerShape(14.dp),
+                        label = { Text("Штрихкод") }
+                    )
+                }
+
                 OutlinedButton(
                     onClick = {
                         launcher.launch("image/*")
@@ -281,7 +294,8 @@ internal fun ProductDialog(
                             name = "",
                             imageUri = null,
                             weight = "1",
-                            quantity = "1"
+                            quantity = "1",
+                            barcode = null
                         )
                     }
                 ) {

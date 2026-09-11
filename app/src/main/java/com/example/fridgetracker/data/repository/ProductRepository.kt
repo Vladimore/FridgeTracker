@@ -3,6 +3,7 @@ package com.example.fridgetracker.data.repository
 import com.example.fridgetracker.data.local.ProductDao
 import com.example.fridgetracker.data.local.ProductEntity
 import com.example.fridgetracker.data.local.ProductActionEntity
+import com.example.fridgetracker.data.local.BarcodeProductCacheEntity
 import com.example.fridgetracker.data.local.SyncOperationDao
 import com.example.fridgetracker.data.local.SyncOperationEntity
 import com.example.fridgetracker.domain.model.Product
@@ -14,6 +15,23 @@ class ProductRepository(
     private val dao: ProductDao,
     private val syncDao: SyncOperationDao
 ) {
+    suspend fun findBarcodeCache(barcode: String): BarcodeProductCacheEntity? =
+        dao.findBarcodeCache(barcode)
+
+    suspend fun saveBarcodeCache(product: Product) {
+        product.barcode?.takeIf { it.isNotBlank() }?.let { barcode ->
+            dao.saveBarcodeCache(
+                BarcodeProductCacheEntity(
+                    barcode = barcode,
+                    name = product.name,
+                    imageUrl = product.imageUri,
+                    additionalData = product.weight.toString(),
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+        }
+    }
+
     fun observeProducts(): Flow<List<Product>> =
         dao.observeAll().map { list -> list.map { it.toDomain() } }
 
@@ -23,6 +41,7 @@ class ProductRepository(
             id = product.id.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
         ).toEntity(now)
         dao.insert(saved)
+        saveBarcodeCache(saved.toDomain())
         record(saved, "ADDED", null, saved.currentQuantity, now)
     }
 
