@@ -5,6 +5,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProductDao {
+    @Query("SELECT * FROM barcode_product_cache WHERE barcode = :barcode LIMIT 1")
+    suspend fun findBarcodeCache(barcode: String): BarcodeProductCacheEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveBarcodeCache(cache: BarcodeProductCacheEntity)
+
     @Query("SELECT * FROM products WHERE isDeleted = 0 AND currentQuantity > 0 AND name LIKE '%' || :query || '%' ORDER BY updatedAt DESC")
     fun observeByQuery(query: String): Flow<List<ProductEntity>>
 

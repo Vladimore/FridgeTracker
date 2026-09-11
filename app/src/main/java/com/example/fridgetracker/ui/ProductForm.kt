@@ -12,7 +12,8 @@ data class ProductFormState(
     val name: String = "",
     val imageUri: String? = null,
     val weight: String = "1",
-    val quantity: String = "1"
+    val quantity: String = "1",
+    val barcode: String? = null
 )
 
 fun ProductFormState.isValid(): Boolean =
